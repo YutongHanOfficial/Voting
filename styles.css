@@ -152,3 +152,10 @@ li {
   font-size: 1.2em;
   margin: 10px 0;
 }
+
+/* Add hover effect for leaderboard items */
+li:hover {
+  color: #00e5ff;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
