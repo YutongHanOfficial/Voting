@@ -122,6 +122,7 @@ footer {
   display: flex;
   flex-direction: column; /* Stack the title and list vertically */
   justify-content: flex-start; /* Align the title and list from the top */
+  margin-bottom: 20px; /* Add space below each leaderboard */
 }
 
 h2 {
