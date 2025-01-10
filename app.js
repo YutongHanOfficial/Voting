@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -20,8 +20,6 @@ const db = getDatabase(app);
 // DOM elements
 const item1Div = document.getElementById("item1");
 const item2Div = document.getElementById("item2");
-const vote1Button = document.getElementById("vote1");
-const vote2Button = document.getElementById("vote2");
 
 let items = [];
 let currentPair = [];
@@ -94,6 +92,6 @@ function saveVote(winner, loser) {
   generateRandomItems();
 }
 
-// Event listeners
-vote1Button.addEventListener("click", () => saveVote(currentPair[0], currentPair[1]));
-vote2Button.addEventListener("click", () => saveVote(currentPair[1], currentPair[0]));
+// Event listeners for item clicks
+item1Div.addEventListener("click", () => saveVote(currentPair[0], currentPair[1]));
+item2Div.addEventListener("click", () => saveVote(currentPair[1], currentPair[0]));
