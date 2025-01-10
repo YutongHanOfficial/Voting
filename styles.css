@@ -105,15 +105,15 @@ footer {
 #leaderboards {
   margin-top: 50px;
   padding: 20px;
-  display: flex; /* Make the container a flexbox */
-  justify-content: space-between; /* Space the leaderboards apart */
-  gap: 20px; /* Adjust the gap between leaderboards */
+  display: flex; /* Flexbox layout to display side by side */
+  justify-content: space-between; /* Space them out evenly */
+  gap: 40px; /* Increase the gap between leaderboards */
 }
 
 h2 {
   color: #00e5ff;
   text-align: center;
-  width: 100%;
+  margin-bottom: 15px; /* Add some space between the title and list */
 }
 
 ul {
@@ -130,9 +130,14 @@ li {
 
 /* Individual leaderboard style */
 .leaderboard {
-  flex: 1; /* Allow each leaderboard to take up equal width */
-  padding: 10px;
+  flex: 1; /* Allow each leaderboard to take up equal space */
+  min-width: 300px; /* Ensure each leaderboard has a reasonable width */
+  max-width: 400px; /* Maximum width to prevent overcrowding */
+  padding: 20px;
   background-color: #1d1d1d;
   border-radius: 8px;
   border: 1px solid #333;
+  display: flex;
+  flex-direction: column; /* Ensure title and list are stacked vertically */
+  justify-content: flex-start; /* Keep content aligned at the top */
 }
