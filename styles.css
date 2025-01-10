@@ -109,6 +109,8 @@ footer {
   justify-content: space-between;
   gap: 40px; /* Space between the two leaderboards */
   flex-wrap: wrap; /* Allow the leaderboards to wrap on smaller screens */
+  max-width: 1200px;
+  width: 100%;
 }
 
 .leaderboard {
@@ -123,6 +125,7 @@ footer {
   flex-direction: column; /* Stack the title and list vertically */
   justify-content: flex-start; /* Align the title and list from the top */
   margin-bottom: 20px; /* Add space below each leaderboard */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 h2 {
@@ -141,4 +144,11 @@ li {
   color: #e0e0e0;
   font-size: 1.2em;
   margin: 10px 0;
+}
+
+/* Add hover effect for leaderboard items */
+li:hover {
+  color: #00e5ff;
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
