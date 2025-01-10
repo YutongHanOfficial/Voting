@@ -100,3 +100,26 @@ footer {
     transform: translateY(0);
   }
 }
+
+/* Leaderboard Styles */
+#leaderboards {
+  margin-top: 50px;
+  padding: 20px;
+}
+
+h2 {
+  color: #00e5ff;
+  text-align: center;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  text-align: left;
+}
+
+li {
+  color: #e0e0e0;
+  font-size: 1.2em;
+  margin: 10px 0;
+}
