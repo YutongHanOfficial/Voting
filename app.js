@@ -74,9 +74,9 @@ function saveVote(winner, loser) {
   get(winnerRef).then(snapshot => {
     const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
     update(winnerRef, {
-      votes: data.votes + 1,
-      wins: data.wins + 1,
-      losses: data.losses
+      votes: data.votes + 1, // Increase the votes for the winner
+      wins: data.wins + 1,   // Increase the wins for the winner
+      losses: data.losses   // The losses stay the same
     });
   });
 
@@ -84,9 +84,9 @@ function saveVote(winner, loser) {
   get(loserRef).then(snapshot => {
     const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
     update(loserRef, {
-      votes: data.votes,
-      wins: data.wins,
-      losses: data.losses + 1
+      votes: data.votes + 1,  // Increase the votes for the loser
+      wins: data.wins,        // The wins stay the same
+      losses: data.losses + 1 // Increase the losses for the loser
     });
   });
 
