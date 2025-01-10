@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -43,11 +43,18 @@ generateRandomItems();
 // Save vote to Firebase
 function saveVote(item) {
   const itemRef = ref(db, `votes/${item}`);
-  get(itemRef).then((snapshot) => {
-    const currentVotes = snapshot.exists() ? snapshot.val() : 0;
-    update(itemRef, currentVotes + 1);
-    generateRandomItems();
-  });
+  get(itemRef)
+    .then((snapshot) => {
+      const currentVotes = snapshot.exists() ? snapshot.val() : 0;
+      return set(itemRef, currentVotes + 1);
+    })
+    .then(() => {
+      console.log(`Vote recorded for ${item}`);
+      generateRandomItems();
+    })
+    .catch((error) => {
+      console.error("Error saving vote:", error);
+    });
 }
 
 // Event Listeners
