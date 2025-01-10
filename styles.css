@@ -1,0 +1,102 @@
+/* General body styles */
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+/* Main title */
+h1 {
+  font-size: 3em;
+  color: #00e5ff;
+  margin-bottom: 50px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  animation: fadeIn 2s ease-out;
+}
+
+/* Item container */
+#items {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+}
+
+/* Styling for individual items */
+.item {
+  background: linear-gradient(135deg, #4caf50, #000000);
+  border-radius: 15px;
+  padding: 30px;
+  width: 250px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease-in-out;
+}
+
+.item:hover {
+  transform: scale(1.05);
+}
+
+/* Item name and stats */
+.name {
+  font-size: 1.6em;
+  font-weight: bold;
+  color: #00e5ff;
+}
+
+.stats {
+  font-size: 1.1em;
+  color: #b0bec5;
+  margin-top: 10px;
+}
+
+/* Button styles */
+button {
+  background-color: #00e5ff;
+  color: #121212;
+  border: none;
+  border-radius: 30px;
+  padding: 15px 40px;
+  font-size: 1.2em;
+  cursor: pointer;
+  margin: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: #1de9b6;
+  transform: translateY(-5px);
+}
+
+/* Dark footer */
+footer {
+  position: fixed;
+  bottom: 10px;
+  font-size: 0.9em;
+  color: #b0bec5;
+  text-align: center;
+}
+
+/* Fade-in animation for h1 */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
