@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-// Firebase configuration
+// Firebase configuration (same as before)
 const firebaseConfig = {
   apiKey: "AIzaSyD-4fuqlH4nK6xnWbgYJ_kAE6I-zmMsYW0",
   authDomain: "voting-ca95e.firebaseapp.com",
@@ -21,6 +21,10 @@ const db = getDatabase(app);
 const item1Div = document.getElementById("item1");
 const item2Div = document.getElementById("item2");
 
+// New DOM elements for leaderboard
+const mostLikedList = document.getElementById("mostLikedList");
+const leastLikedList = document.getElementById("leastLikedList");
+
 let items = [];
 let currentPair = [];
 
@@ -30,6 +34,7 @@ fetch('items.json')
   .then(data => {
     items = data.items;
     generateRandomItems(); // Generate the first pair of items
+    loadLeaderboard(); // Load leaderboard
   })
   .catch(error => {
     console.error('Error loading items:', error);
@@ -95,3 +100,38 @@ function saveVote(winner, loser) {
 // Event listeners for item clicks
 item1Div.addEventListener("click", () => saveVote(currentPair[0], currentPair[1]));
 item2Div.addEventListener("click", () => saveVote(currentPair[1], currentPair[0]));
+
+// Load leaderboard
+function loadLeaderboard() {
+  get(ref(db, 'votes')).then(snapshot => {
+    const itemsData = snapshot.val();
+    const itemList = Object.keys(itemsData).map(item => {
+      const { votes, wins } = itemsData[item];
+      const winPercentage = votes > 0 ? (wins / votes) * 100 : 0;
+      return { name: item, winPercentage };
+    });
+
+    // Sort items by win percentage (most liked first, least liked last)
+    itemList.sort((a, b) => b.winPercentage - a.winPercentage);
+
+    // Get top 10 most liked and least liked
+    const mostLiked = itemList.slice(0, 10);
+    const leastLiked = itemList.slice(-10);
+
+    // Update the leaderboard UI
+    updateLeaderboardUI(mostLiked, leastLiked);
+  });
+}
+
+// Update leaderboard UI
+function updateLeaderboardUI(mostLiked, leastLiked) {
+  // Most liked
+  mostLikedList.innerHTML = mostLiked.map(item => 
+    `<li>${item.name} - ${item.winPercentage.toFixed(2)}%</li>`
+  ).join('');
+
+  // Least liked
+  leastLikedList.innerHTML = leastLiked.map(item => 
+    `<li>${item.name} - ${item.winPercentage.toFixed(2)}%</li>`
+  ).join('');
+}
