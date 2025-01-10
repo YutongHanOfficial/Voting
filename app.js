@@ -17,16 +17,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Items array
-const items = ["Oxygen", "Water", "Internet", "Sleep", "Laughter", "Music", "Love", "Food"];
-
 // DOM elements
 const item1Div = document.getElementById("item1");
 const item2Div = document.getElementById("item2");
 const vote1Button = document.getElementById("vote1");
 const vote2Button = document.getElementById("vote2");
 
+let items = [];
 let currentPair = [];
+
+// Fetch items from JSON file
+fetch('items.json')
+  .then(response => response.json())
+  .then(data => {
+    items = data.items;
+    generateRandomItems(); // Generate the first pair of items
+  })
+  .catch(error => {
+    console.error('Error loading items:', error);
+  });
 
 // Generate random items
 function generateRandomItems() {
@@ -88,6 +97,3 @@ function saveVote(winner, loser) {
 // Event listeners
 vote1Button.addEventListener("click", () => saveVote(currentPair[0], currentPair[1]));
 vote2Button.addEventListener("click", () => saveVote(currentPair[1], currentPair[0]));
-
-// Initial setup
-generateRandomItems();
