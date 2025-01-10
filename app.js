@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
 import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-// Firebase config
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD-4fuqlH4nK6xnWbgYJ_kAE6I-zmMsYW0",
   authDomain: "voting-ca95e.firebaseapp.com",
@@ -20,14 +20,15 @@ const db = getDatabase(app);
 // Items array
 const items = ["Oxygen", "Water", "Internet", "Sleep", "Laughter", "Music", "Love", "Food"];
 
-// DOM Elements
+// DOM elements
 const item1Div = document.getElementById("item1");
 const item2Div = document.getElementById("item2");
 const vote1Button = document.getElementById("vote1");
 const vote2Button = document.getElementById("vote2");
 
-// Generate random items
 let currentPair = [];
+
+// Generate random items
 function generateRandomItems() {
   const item1 = items[Math.floor(Math.random() * items.length)];
   let item2 = items[Math.floor(Math.random() * items.length)];
@@ -35,28 +36,58 @@ function generateRandomItems() {
     item2 = items[Math.floor(Math.random() * items.length)];
   }
   currentPair = [item1, item2];
-  item1Div.textContent = item1;
-  item2Div.textContent = item2;
+  updateUI();
 }
-generateRandomItems();
 
-// Save vote to Firebase
-function saveVote(item) {
-  const itemRef = ref(db, `votes/${item}`);
-  get(itemRef)
-    .then((snapshot) => {
-      const currentVotes = snapshot.exists() ? snapshot.val() : 0;
-      return set(itemRef, currentVotes + 1);
-    })
-    .then(() => {
-      console.log(`Vote recorded for ${item}`);
-      generateRandomItems();
-    })
-    .catch((error) => {
-      console.error("Error saving vote:", error);
+// Update the UI with item names and stats
+function updateUI() {
+  const [item1, item2] = currentPair;
+
+  get(ref(db, `votes/${item1}`)).then(snapshot => {
+    const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
+    item1Div.querySelector(".name").textContent = item1;
+    item1Div.querySelector(".stats").textContent = `Votes: ${data.votes}, Wins: ${data.wins}, Losses: ${data.losses}`;
+  });
+
+  get(ref(db, `votes/${item2}`)).then(snapshot => {
+    const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
+    item2Div.querySelector(".name").textContent = item2;
+    item2Div.querySelector(".stats").textContent = `Votes: ${data.votes}, Wins: ${data.wins}, Losses: ${data.losses}`;
+  });
+}
+
+// Save vote to Firebase and update win/loss counts
+function saveVote(winner, loser) {
+  const winnerRef = ref(db, `votes/${winner}`);
+  const loserRef = ref(db, `votes/${loser}`);
+
+  // Update winner stats
+  get(winnerRef).then(snapshot => {
+    const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
+    update(winnerRef, {
+      votes: data.votes + 1,
+      wins: data.wins + 1,
+      losses: data.losses
     });
+  });
+
+  // Update loser stats
+  get(loserRef).then(snapshot => {
+    const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
+    update(loserRef, {
+      votes: data.votes,
+      wins: data.wins,
+      losses: data.losses + 1
+    });
+  });
+
+  // Generate a new pair after voting
+  generateRandomItems();
 }
 
-// Event Listeners
-vote1Button.addEventListener("click", () => saveVote(currentPair[0]));
-vote2Button.addEventListener("click", () => saveVote(currentPair[1]));
+// Event listeners
+vote1Button.addEventListener("click", () => saveVote(currentPair[0], currentPair[1]));
+vote2Button.addEventListener("click", () => saveVote(currentPair[1], currentPair[0]));
+
+// Initial setup
+generateRandomItems();
