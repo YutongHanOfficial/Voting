@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebas
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 import { update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-// Firebase configuration (same as before)
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD-4fuqlH4nK6xnWbgYJ_kAE6I-zmMsYW0",
   authDomain: "voting-ca95e.firebaseapp.com",
