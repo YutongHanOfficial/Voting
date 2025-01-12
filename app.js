@@ -74,31 +74,31 @@ function generateRandomItems() {
 
 // Update UI
 function updateUI(item1, item2) {
-  const data1 = votesData[item1] || { votes: 0, wins: 0, losses: 0 };
-  const data2 = votesData[item2] || { votes: 0, wins: 0, losses: 0 };
+  const data1 = votesData[item1.id] || { votes: 0, wins: 0, losses: 0 };
+  const data2 = votesData[item2.id] || { votes: 0, wins: 0, losses: 0 };
 
-  item1Div.querySelector(".name").textContent = item1;
+  item1Div.querySelector(".name").textContent = item1.name;
   item1Div.querySelector(".stats").textContent = `Votes: ${data1.votes}, Wins: ${data1.wins}, Losses: ${data1.losses}`;
-  item2Div.querySelector(".name").textContent = item2;
+  item2Div.querySelector(".name").textContent = item2.name;
   item2Div.querySelector(".stats").textContent = `Votes: ${data2.votes}, Wins: ${data2.wins}, Losses: ${data2.losses}`;
 
-  item1Div.onclick = () => saveVote(item1, item2);
-  item2Div.onclick = () => saveVote(item2, item1);
+  item1Div.onclick = () => saveVote(item1.id, item2.id);
+  item2Div.onclick = () => saveVote(item2.id, item1.id);
 }
 
 // Save vote and update leaderboard
-function saveVote(winner, loser) {
-  votesData[winner] = votesData[winner] || { votes: 0, wins: 0, losses: 0 };
-  votesData[loser] = votesData[loser] || { votes: 0, wins: 0, losses: 0 };
+function saveVote(winnerId, loserId) {
+  votesData[winnerId] = votesData[winnerId] || { votes: 0, wins: 0, losses: 0 };
+  votesData[loserId] = votesData[loserId] || { votes: 0, wins: 0, losses: 0 };
 
-  votesData[winner].votes++;
-  votesData[winner].wins++;
-  votesData[loser].votes++;
-  votesData[loser].losses++;
+  votesData[winnerId].votes++;
+  votesData[winnerId].wins++;
+  votesData[loserId].votes++;
+  votesData[loserId].losses++;
 
   update(ref(db, "votes"), {
-    [winner]: votesData[winner],
-    [loser]: votesData[loser]
+    [winnerId]: votesData[winnerId],
+    [loserId]: votesData[loserId]
   });
 
   generateRandomItems();
@@ -107,9 +107,10 @@ function saveVote(winner, loser) {
 
 // Load leaderboard
 function loadLeaderboard() {
-  const itemsArray = Object.entries(votesData).map(([name, data]) => {
+  const itemsArray = Object.entries(votesData).map(([id, data]) => {
+    const item = items.find(item => item.id === id);
     const winPercentage = data.votes > 0 ? (data.wins / data.votes) * 100 : 0;
-    return { name, winPercentage };
+    return { name: item?.name || "Unknown", winPercentage };
   });
 
   itemsArray.sort((a, b) => b.winPercentage - a.winPercentage);
