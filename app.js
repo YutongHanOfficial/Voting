@@ -107,16 +107,22 @@ function saveVote(winnerId, loserId) {
 
 // Load leaderboard
 function loadLeaderboard() {
+  // Convert the votesData into an array of objects with associated names
   const itemsArray = Object.entries(votesData).map(([id, data]) => {
-    const item = items.find(item => item.id === id);
+    const item = items.find(item => item.id === id); // Find the matching item by ID
+    const name = item ? item.name : `Unknown (ID: ${id})`; // Fallback to Unknown if not found
     const winPercentage = data.votes > 0 ? (data.wins / data.votes) * 100 : 0;
-    return { name: item?.name || "Unknown", winPercentage };
+    return { name, winPercentage };
   });
 
+  // Sort by win percentage
   itemsArray.sort((a, b) => b.winPercentage - a.winPercentage);
+
+  // Split into most and least liked
   const mostLiked = itemsArray.slice(0, 10);
   const leastLiked = itemsArray.slice(-10);
 
+  // Update the leaderboard UI
   updateLeaderboardUI(mostLiked, leastLiked);
 }
 
