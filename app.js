@@ -28,6 +28,7 @@ let votesData = {};
 let shuffledIndexes = [];
 let currentIndex = 0;
 let isVoting = false; // Flag to prevent multiple votes
+let freezeTimeout; // Timeout for detecting freeze
 
 // Fetch items and votes data
 async function init() {
@@ -86,6 +87,9 @@ function updateUI(item1, item2) {
   // Voting system
   item1Div.onclick = () => handleVote(item1.id, item2.id);
   item2Div.onclick = () => handleVote(item2.id, item1.id);
+
+  // Reset freeze detection
+  resetFreezeTimeout();
 }
 
 // Handle vote
@@ -135,6 +139,19 @@ function loadLeaderboard() {
 function updateLeaderboardUI(mostLiked, leastLiked) {
   mostLikedList.innerHTML = mostLiked.map(item => `<li>${item.name} - ${item.winPercentage.toFixed(2)}%</li>`).join("");
   leastLikedList.innerHTML = leastLiked.map(item => `<li>${item.name} - ${item.winPercentage.toFixed(2)}%</li>`).join("");
+}
+
+// Freeze timeout reset and auto reload if frozen
+function resetFreezeTimeout() {
+  if (freezeTimeout) {
+    clearTimeout(freezeTimeout);
+  }
+
+  // Set timeout to detect freeze (after 10 seconds, reload the page)
+  freezeTimeout = setTimeout(() => {
+    alert("The app has been frozen for too long. Reloading the page.");
+    location.reload(); // Reload the page to reset the state
+  }, 10000); // Timeout after 10 seconds
 }
 
 // Initialize app
