@@ -27,6 +27,7 @@ let items = [];
 let votesData = {};
 let shuffledIndexes = [];
 let currentIndex = 0;
+let isVotingLocked = false; // Flag to prevent multiple votes at once
 
 // Fetch items and votes data
 async function init() {
@@ -82,45 +83,54 @@ function updateUI(item1, item2) {
   item2Div.querySelector(".name").textContent = item2.name;
   item2Div.querySelector(".stats").textContent = `Votes: ${data2.votes}, Wins: ${data2.wins}, Losses: ${data2.losses}`;
 
-  // Voting system
-  item1Div.onclick = () => saveVote(item1.id, item2.id);
-  item2Div.onclick = () => saveVote(item2.id, item1.id);
+  // Voting system with a lock
+  item1Div.onclick = () => handleVote(item1.id, item2.id);
+  item2Div.onclick = () => handleVote(item2.id, item1.id);
 }
 
-// Save vote and update leaderboard
-function saveVote(winnerId, loserId) {
+// Handle vote (with lock to prevent multiple votes)
+function handleVote(winnerId, loserId) {
+  if (isVotingLocked) return; // Prevent multiple votes
+  isVotingLocked = true; // Lock the voting
+
+  // Update votes data
   votesData[winnerId] = votesData[winnerId] || { name: items.find(item => item.id === winnerId).name, votes: 0, wins: 0, losses: 0 };
   votesData[loserId] = votesData[loserId] || { name: items.find(item => item.id === loserId).name, votes: 0, wins: 0, losses: 0 };
 
-  // Update votes
+  // Increment votes and wins/losses
   votesData[winnerId].votes++;
   votesData[winnerId].wins++;
   votesData[loserId].votes++;
   votesData[loserId].losses++;
 
-  // Update Firebase with the new data
+  // Update Firebase with new votes data
   update(ref(db, "votes"), {
     [winnerId]: votesData[winnerId],
     [loserId]: votesData[loserId]
+  }).then(() => {
+    // After vote is updated, unlock voting and generate next random items
+    isVotingLocked = false;
+    generateRandomItems();
+    loadLeaderboard(); // Reload leaderboard with updated data
+  }).catch(error => {
+    console.error("Error updating Firebase:", error);
+    isVotingLocked = false; // Ensure the lock is released in case of error
   });
-
-  generateRandomItems();  // Get the next random items
-  loadLeaderboard();  // Reload leaderboard
 }
 
 // Load leaderboard
 function loadLeaderboard() {
   const itemsArray = Object.entries(votesData).map(([id, data]) => {
     const winPercentage = data.votes > 0 ? (data.wins / data.votes) * 100 : 0;
-    return { id, name: data.name, winPercentage };  // Store id and name
+    return { id, name: data.name, winPercentage };
   });
 
   // Sort by win percentage
   itemsArray.sort((a, b) => b.winPercentage - a.winPercentage);
-  const mostLiked = itemsArray.slice(0, 10);  // Top 10
-  const leastLiked = itemsArray.slice(-10);  // Bottom 10
+  const mostLiked = itemsArray.slice(0, 10); // Top 10
+  const leastLiked = itemsArray.slice(-10); // Bottom 10
 
-  updateLeaderboardUI(mostLiked, leastLiked);  // Update the UI
+  updateLeaderboardUI(mostLiked, leastLiked); // Update leaderboard UI
 }
 
 // Update leaderboard UI
