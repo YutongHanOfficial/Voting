@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
-import { update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -8,7 +7,7 @@ const firebaseConfig = {
   authDomain: "voting-ca95e.firebaseapp.com",
   databaseURL: "https://voting-ca95e-default-rtdb.firebaseio.com",
   projectId: "voting-ca95e",
-  storageBucket: "voting-ca95e.firebasestorage.app",
+  storageBucket: "voting-ca95e.appspot.com",
   messagingSenderId: "70807736682",
   appId: "1:70807736682:web:7ef92ca8d58465c5881513",
   measurementId: "G-YZYR1FZHLQ"
@@ -21,118 +20,110 @@ const db = getDatabase(app);
 // DOM elements
 const item1Div = document.getElementById("item1");
 const item2Div = document.getElementById("item2");
-
-// New DOM elements for leaderboard
 const mostLikedList = document.getElementById("mostLikedList");
 const leastLikedList = document.getElementById("leastLikedList");
 
 let items = [];
-let currentPair = [];
+let votesData = {};
+let shuffledIndexes = [];
+let currentIndex = 0;
 
-// Fetch items from JSON file
-fetch('items.json')
-  .then(response => response.json())
-  .then(data => {
-    items = data.items;
-    generateRandomItems(); // Generate the first pair of items
-    loadLeaderboard(); // Load leaderboard
-  })
-  .catch(error => {
-    console.error('Error loading items:', error);
-  });
+// Fetch items and votes data
+async function init() {
+  try {
+    const [itemsResponse, votesSnapshot] = await Promise.all([
+      fetch("items.json"),
+      get(ref(db, "votes"))
+    ]);
+
+    const itemsData = await itemsResponse.json();
+    items = itemsData.items;
+
+    votesData = votesSnapshot.exists() ? votesSnapshot.val() : {};
+    shuffledIndexes = shuffleArray([...Array(items.length).keys()]);
+    generateRandomItems();
+    loadLeaderboard();
+  } catch (error) {
+    console.error("Error initializing app:", error);
+  }
+}
+
+// Shuffle an array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
 
 // Generate random items
 function generateRandomItems() {
-  const item1 = items[Math.floor(Math.random() * items.length)];
-  let item2 = items[Math.floor(Math.random() * items.length)];
-  while (item1 === item2) {
-    item2 = items[Math.floor(Math.random() * items.length)];
+  if (shuffledIndexes.length < 2) {
+    shuffledIndexes = shuffleArray([...Array(items.length).keys()]);
+    currentIndex = 0;
   }
-  currentPair = [item1, item2];
-  updateUI();
+
+  const item1Index = shuffledIndexes[currentIndex++];
+  const item2Index = shuffledIndexes[currentIndex++];
+  const item1 = items[item1Index];
+  const item2 = items[item2Index];
+
+  updateUI(item1, item2);
 }
 
-// Update the UI with item names and stats
-function updateUI() {
-  const [item1, item2] = currentPair;
+// Update UI
+function updateUI(item1, item2) {
+  const data1 = votesData[item1] || { votes: 0, wins: 0, losses: 0 };
+  const data2 = votesData[item2] || { votes: 0, wins: 0, losses: 0 };
 
-  get(ref(db, `votes/${item1}`)).then(snapshot => {
-    const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
-    item1Div.querySelector(".name").textContent = item1;
-    item1Div.querySelector(".stats").textContent = `Votes: ${data.votes}, Wins: ${data.wins}, Losses: ${data.losses}`;
-  });
+  item1Div.querySelector(".name").textContent = item1;
+  item1Div.querySelector(".stats").textContent = `Votes: ${data1.votes}, Wins: ${data1.wins}, Losses: ${data1.losses}`;
+  item2Div.querySelector(".name").textContent = item2;
+  item2Div.querySelector(".stats").textContent = `Votes: ${data2.votes}, Wins: ${data2.wins}, Losses: ${data2.losses}`;
 
-  get(ref(db, `votes/${item2}`)).then(snapshot => {
-    const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
-    item2Div.querySelector(".name").textContent = item2;
-    item2Div.querySelector(".stats").textContent = `Votes: ${data.votes}, Wins: ${data.wins}, Losses: ${data.losses}`;
-  });
+  item1Div.onclick = () => saveVote(item1, item2);
+  item2Div.onclick = () => saveVote(item2, item1);
 }
 
-// Save vote to Firebase and update win/loss counts
+// Save vote and update leaderboard
 function saveVote(winner, loser) {
-  const winnerRef = ref(db, `votes/${winner}`);
-  const loserRef = ref(db, `votes/${loser}`);
+  votesData[winner] = votesData[winner] || { votes: 0, wins: 0, losses: 0 };
+  votesData[loser] = votesData[loser] || { votes: 0, wins: 0, losses: 0 };
 
-  // Update winner stats
-  get(winnerRef).then(snapshot => {
-    const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
-    update(winnerRef, {
-      votes: data.votes + 1, // Increase the votes for the winner
-      wins: data.wins + 1,   // Increase the wins for the winner
-      losses: data.losses   // The losses stay the same
-    });
+  votesData[winner].votes++;
+  votesData[winner].wins++;
+  votesData[loser].votes++;
+  votesData[loser].losses++;
+
+  update(ref(db, "votes"), {
+    [winner]: votesData[winner],
+    [loser]: votesData[loser]
   });
 
-  // Update loser stats
-  get(loserRef).then(snapshot => {
-    const data = snapshot.exists() ? snapshot.val() : { votes: 0, wins: 0, losses: 0 };
-    update(loserRef, {
-      votes: data.votes + 1,  // Increase the votes for the loser
-      wins: data.wins,        // The wins stay the same
-      losses: data.losses + 1 // Increase the losses for the loser
-    });
-  });
-
-  // Generate a new pair after voting
   generateRandomItems();
+  loadLeaderboard();
 }
-
-// Event listeners for item clicks
-item1Div.addEventListener("click", () => saveVote(currentPair[0], currentPair[1]));
-item2Div.addEventListener("click", () => saveVote(currentPair[1], currentPair[0]));
 
 // Load leaderboard
 function loadLeaderboard() {
-  get(ref(db, 'votes')).then(snapshot => {
-    const itemsData = snapshot.val();
-    const itemList = Object.keys(itemsData).map(item => {
-      const { votes, wins } = itemsData[item];
-      const winPercentage = votes > 0 ? (wins / votes) * 100 : 0;
-      return { name: item, winPercentage };
-    });
-
-    // Sort items by win percentage (most liked first, least liked last)
-    itemList.sort((a, b) => b.winPercentage - a.winPercentage);
-
-    // Get top 10 most liked and least liked
-    const mostLiked = itemList.slice(0, 45); // All 45 presidents
-    const leastLiked = itemList.slice(-10);
-
-    // Update the leaderboard UI
-    updateLeaderboardUI(mostLiked, leastLiked);
+  const itemsArray = Object.entries(votesData).map(([name, data]) => {
+    const winPercentage = data.votes > 0 ? (data.wins / data.votes) * 100 : 0;
+    return { name, winPercentage };
   });
+
+  itemsArray.sort((a, b) => b.winPercentage - a.winPercentage);
+  const mostLiked = itemsArray.slice(0, 10);
+  const leastLiked = itemsArray.slice(-10);
+
+  updateLeaderboardUI(mostLiked, leastLiked);
 }
 
 // Update leaderboard UI
 function updateLeaderboardUI(mostLiked, leastLiked) {
-  // Most liked
-  mostLikedList.innerHTML = mostLiked.map(item => 
-    `<li>${item.name} - ${item.winPercentage.toFixed(2)}%</li>`
-  ).join('');
-
-  // Least liked
-  leastLikedList.innerHTML = leastLiked.map(item => 
-    `<li>${item.name} - ${item.winPercentage.toFixed(2)}%</li>`
-  ).join('');
+  mostLikedList.innerHTML = mostLiked.map(item => `<li>${item.name} - ${item.winPercentage.toFixed(2)}%</li>`).join("");
+  leastLikedList.innerHTML = leastLiked.map(item => `<li>${item.name} - ${item.winPercentage.toFixed(2)}%</li>`).join("");
 }
+
+// Initialize app
+init();
