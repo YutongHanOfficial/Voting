@@ -116,7 +116,7 @@ function loadLeaderboard() {
     itemList.sort((a, b) => b.winPercentage - a.winPercentage);
 
     // Get top 10 most liked and least liked
-    const mostLiked = itemList.slice(0, 10);
+    const mostLiked = itemList.slice(0, 45); // All 45 presidents
     const leastLiked = itemList.slice(-10);
 
     // Update the leaderboard UI
