@@ -74,50 +74,52 @@ function generateRandomItems() {
 
 // Update UI
 function updateUI(item1, item2) {
-  const data1 = votesData[item1.id] || { votes: 0, wins: 0, losses: 0 };
-  const data2 = votesData[item2.id] || { votes: 0, wins: 0, losses: 0 };
+  const data1 = votesData[item1.name] || { votes: 0, wins: 0, losses: 0 };
+  const data2 = votesData[item2.name] || { votes: 0, wins: 0, losses: 0 };
 
   item1Div.querySelector(".name").textContent = item1.name;
   item1Div.querySelector(".stats").textContent = `Votes: ${data1.votes}, Wins: ${data1.wins}, Losses: ${data1.losses}`;
   item2Div.querySelector(".name").textContent = item2.name;
   item2Div.querySelector(".stats").textContent = `Votes: ${data2.votes}, Wins: ${data2.wins}, Losses: ${data2.losses}`;
 
-  item1Div.onclick = () => saveVote(item1.id, item2.id);
-  item2Div.onclick = () => saveVote(item2.id, item1.id);
+  // Attach voting functionality
+  item1Div.onclick = () => saveVote(item1.name, item2.name);
+  item2Div.onclick = () => saveVote(item2.name, item1.name);
 }
 
 // Save vote and update leaderboard
-function saveVote(winnerId, loserId) {
-  votesData[winnerId] = votesData[winnerId] || { votes: 0, wins: 0, losses: 0 };
-  votesData[loserId] = votesData[loserId] || { votes: 0, wins: 0, losses: 0 };
+function saveVote(winnerName, loserName) {
+  votesData[winnerName] = votesData[winnerName] || { votes: 0, wins: 0, losses: 0 };
+  votesData[loserName] = votesData[loserName] || { votes: 0, wins: 0, losses: 0 };
 
-  votesData[winnerId].votes++;
-  votesData[winnerId].wins++;
-  votesData[loserId].votes++;
-  votesData[loserId].losses++;
+  // Update the vote counts
+  votesData[winnerName].votes++;
+  votesData[winnerName].wins++;
+  votesData[loserName].votes++;
+  votesData[loserName].losses++;
 
+  // Save the new vote data to Firebase
   update(ref(db, "votes"), {
-    [winnerId]: votesData[winnerId],
-    [loserId]: votesData[loserId]
+    [winnerName]: votesData[winnerName],
+    [loserName]: votesData[loserName]
   });
 
-  generateRandomItems();
-  loadLeaderboard();
+  generateRandomItems();  // Generate next random items for comparison
+  loadLeaderboard();  // Reload leaderboard
 }
 
 // Load leaderboard
 function loadLeaderboard() {
-  const itemsArray = Object.entries(votesData).map(([id, data]) => {
-    const item = items.find(item => item.id === id);
+  const itemsArray = Object.entries(votesData).map(([name, data]) => {
     const winPercentage = data.votes > 0 ? (data.wins / data.votes) * 100 : 0;
-    return { name: item?.name || "Unknown", winPercentage };
+    return { name, winPercentage };  // We now directly use name as the key
   });
 
-  itemsArray.sort((a, b) => b.winPercentage - a.winPercentage);
-  const mostLiked = itemsArray.slice(0, 10);
-  const leastLiked = itemsArray.slice(-10);
+  itemsArray.sort((a, b) => b.winPercentage - a.winPercentage);  // Sort by win percentage
+  const mostLiked = itemsArray.slice(0, 10);  // Top 10
+  const leastLiked = itemsArray.slice(-10);  // Bottom 10
 
-  updateLeaderboardUI(mostLiked, leastLiked);
+  updateLeaderboardUI(mostLiked, leastLiked);  // Update UI
 }
 
 // Update leaderboard UI
