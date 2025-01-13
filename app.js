@@ -73,7 +73,7 @@ function generateRandomItems() {
   updateUI(item1, item2);
 }
 
-// Update UI
+// Updated UI update logic
 function updateUI(item1, item2) {
   const data1 = votesData[item1.id] || { votes: 0, wins: 0, losses: 0 };
   const data2 = votesData[item2.id] || { votes: 0, wins: 0, losses: 0 };
@@ -83,10 +83,83 @@ function updateUI(item1, item2) {
   item2Div.querySelector(".name").textContent = item2.name;
   item2Div.querySelector(".stats").textContent = `Votes: ${data2.votes}, Wins: ${data2.wins}, Losses: ${data2.losses}`;
 
-  // Voting system
-  item1Div.onclick = () => handleVote(item1.id, item2.id);
-  item2Div.onclick = () => handleVote(item2.id, item1.id);
+  // Add disabled overlay initially
+  addVotingOverlay();
+  
+  // Enable voting after 3 seconds
+  setTimeout(() => {
+    removeVotingOverlay();
+    item1Div.onclick = () => handleVote(item1.id, item2.id);
+    item2Div.onclick = () => handleVote(item2.id, item1.id);
+  }, 3000);
 }
+
+// Add overlay and timer
+function addVotingOverlay() {
+  const overlay1 = document.createElement("div");
+  const overlay2 = document.createElement("div");
+  const timer = document.createElement("span");
+
+  overlay1.className = "vote-overlay";
+  overlay2.className = "vote-overlay";
+  timer.className = "vote-timer";
+
+  let countdown = 3;
+  timer.textContent = countdown;
+
+  const interval = setInterval(() => {
+    countdown--;
+    timer.textContent = countdown;
+    if (countdown <= 0) {
+      clearInterval(interval);
+    }
+  }, 1000);
+
+  overlay1.appendChild(timer.cloneNode(true));
+  overlay2.appendChild(timer);
+
+  item1Div.appendChild(overlay1);
+  item2Div.appendChild(overlay2);
+
+  item1Div.classList.add("disabled");
+  item2Div.classList.add("disabled");
+}
+
+// Remove overlay
+function removeVotingOverlay() {
+  item1Div.classList.remove("disabled");
+  item2Div.classList.remove("disabled");
+
+  const overlays = document.querySelectorAll(".vote-overlay");
+  overlays.forEach((overlay) => overlay.remove());
+}
+
+// CSS for disabled state and overlay
+const style = document.createElement("style");
+style.textContent = `
+  .disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  .vote-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+  }
+  .vote-timer {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+`;
+document.head.appendChild(style);
 
 // Handle vote
 function handleVote(winnerId, loserId) {
