@@ -137,33 +137,6 @@ function removeVotingOverlay() {
   overlays.forEach((overlay) => overlay.remove());
 }
 
-// CSS for disabled state and overlay
-const style = document.createElement("style");
-style.textContent = `
-  .disabled {
-    pointer-events: none;
-    opacity: 0.5;
-  }
-  .vote-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1;
-  }
-  .vote-timer {
-    font-size: 2rem;
-    font-weight: bold;
-  }
-`;
-document.head.appendChild(style);
-
 // Handle vote
 function handleVote(winnerId, loserId) {
   if (isVoting) return; // Prevent multiple votes
