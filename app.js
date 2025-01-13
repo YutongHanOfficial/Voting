@@ -85,44 +85,47 @@ function updateUI(item1, item2) {
 
   // Add disabled overlay initially
   addVotingOverlay();
-  
-  // Enable voting after 3 seconds
+
+  // Enable voting after 1 second
   setTimeout(() => {
     removeVotingOverlay();
     item1Div.onclick = () => handleVote(item1.id, item2.id);
     item2Div.onclick = () => handleVote(item2.id, item1.id);
-  }, 3000);
+  }, 1000);
 }
 
 // Add overlay and timer
 function addVotingOverlay() {
-  const overlay1 = document.createElement("div");
-  const overlay2 = document.createElement("div");
-  const timer = document.createElement("span");
+  const createOverlay = () => {
+    const overlay = document.createElement("div");
+    const timer = document.createElement("span");
+    overlay.className = "vote-overlay";
+    timer.className = "vote-timer";
+    overlay.appendChild(timer);
+    return { overlay, timer };
+  };
 
-  overlay1.className = "vote-overlay";
-  overlay2.className = "vote-overlay";
-  timer.className = "vote-timer";
-
-  let countdown = 3;
-  timer.textContent = countdown;
-
-  const interval = setInterval(() => {
-    countdown--;
-    timer.textContent = countdown;
-    if (countdown <= 0) {
-      clearInterval(interval);
-    }
-  }, 1000);
-
-  overlay1.appendChild(timer.cloneNode(true));
-  overlay2.appendChild(timer);
+  // Create overlays for both options
+  const { overlay: overlay1, timer: timer1 } = createOverlay();
+  const { overlay: overlay2, timer: timer2 } = createOverlay();
 
   item1Div.appendChild(overlay1);
   item2Div.appendChild(overlay2);
 
   item1Div.classList.add("disabled");
   item2Div.classList.add("disabled");
+
+  let countdown = 1; // Start countdown from 1 second
+
+  // Update both timers simultaneously
+  const interval = setInterval(() => {
+    timer1.textContent = countdown;
+    timer2.textContent = countdown;
+    countdown--;
+    if (countdown < 0) {
+      clearInterval(interval);
+    }
+  }, 1000);
 }
 
 // Remove overlay
