@@ -175,7 +175,7 @@ function loadLeaderboard() {
   // Sort by win percentage
   itemsArray.sort((a, b) => b.winPercentage - a.winPercentage);
   const mostLiked = itemsArray.slice(0, 10);  // Top 10
-  const leastLiked = itemsArray.slice(-10);  // Bottom 10
+  const leastLiked = itemsArray.slice(-10).reverse();  // Bottom 10
 
   updateLeaderboardUI(mostLiked, leastLiked);  // Update the UI
 }
